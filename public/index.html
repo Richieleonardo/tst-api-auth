@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Documentation</title>
+</head>
+<body>
+  <h1>API Documentation</h1>
+
+  <h2>1. Login Endpoint</h2>
+  <p>
+    <strong>URL:</strong> `POST /login`<br>
+    <strong>Body:</strong>
+    <pre>
+{
+  "username": "richie",
+  "password": "18222071"
+}
+    </pre>
+    <strong>Response:</strong>
+    <pre>
+{
+  "message": "Login successful",
+  "token": "your.jwt.token.here"
+}
+    </pre>
+  </p>
+
+  <h2>2. Hello World Endpoint (Protected)</h2>
+  <p>
+    <strong>URL:</strong> `GET /hello`<br>
+    <strong>Authorization:</strong> Bearer token<br>
+    Log in first to get the token. Then, paste the token below to access this endpoint.
+  </p>
+
+  <h2>Login</h2>
+  <input id="username" placeholder="Username" />
+  <input id="password" placeholder="Password" type="password" />
+  <button id="loginBtn">Login</button>
+  <p id="loginResponse"></p>
+
+  <h2>Hello World</h2>
+  <p>Paste your token here:</p>
+  <input id="tokenInput" placeholder="Paste your token" />
+  <button id="helloBtn" disabled>Hello World</button>
+  <p id="helloResponse"></p>
+
+  <script>
+    let token = '';
+
+    // Login function
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const name = document.getElementById('username').value;
+      const key = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, key}),
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          token = data.token; // Save token for later use
+          document.getElementById('loginResponse').innerText = `Login successful! Token acquired : ${token} `;
+          document.getElementById('helloBtn').disabled = false; // Enable Hello World button
+        } else {
+          document.getElementById('loginResponse').innerText = data.message || 'Login failed.';
+        }
+      } catch {
+        document.getElementById('loginResponse').innerText = 'Error during login.';
+      }
+    });
+
+    // Access Hello World function
+    document.getElementById('helloBtn').addEventListener('click', async () => {
+      const inputToken = document.getElementById('tokenInput').value;
+
+      if (!inputToken) {
+        document.getElementById('helloResponse').innerText = 'Please paste a token.';
+        return;
+      }
+
+      try {
+        const response = await fetch('/hello', {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${inputToken}` },
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          document.getElementById('helloResponse').innerText = data.message || 'Success!';
+        } else {
+          document.getElementById('helloResponse').innerText = data.message || 'Access denied.';
+        }
+      } catch {
+        document.getElementById('helloResponse').innerText = 'Error accessing Hello World.';
+      }
+    });
+  </script>
+</body>
+</html>
